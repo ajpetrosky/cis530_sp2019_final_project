@@ -54,7 +54,7 @@ def create_tf_idf_matrix(term_document_matrix):
             if tf > 0:
                 tf = 1 + np.log(tf)
             tf_idf_matrix[word, doc] = tf * idfs[word]
-
+#this is a test comment
     return tf_idf_matrix
 
 
