@@ -24,12 +24,16 @@ def nmf_topics(input, output, n):
 
     # Create tfidf based on messages
     x = df['Combined.messages.to.Genie_ALL'].values
-    vect = TfidfVectorizer(max_df=0.95, min_df=0.2, max_features=n, stop_words=stopwords)
+    vect = TfidfVectorizer(max_df=0.9, min_df=3, max_features=160,
+                           stop_words=stopwords.words('english') + ['hi', 'thank', 'genie', 'propername', 'thanks', 'like'])
     X = vect.fit_transform(x)
     feature_names = vect.get_feature_names()
 
     # Run NMF on messages
     nmf_model = NMF(n_components=n, random_state=1, alpha=.1, l1_ratio=.5, init='nndsvd').fit(X)
+    y = nmf_model.transform(X)
+    print(y)
+
     # W = nmf_model.fit_transform(X)
     # H = nmf_model.components_
 
