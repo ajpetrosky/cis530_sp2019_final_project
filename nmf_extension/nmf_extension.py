@@ -39,7 +39,7 @@ def nmf_topics(input, output, n):
 
     display_topics(nmf_model, feature_names, 10)
 
-    #df.to_csv(path_or_buf=output, index=False)
+    # df.to_csv(path_or_buf=output, index=False)
 
 
 def display_topics(model, feature_names, no_top_words):
