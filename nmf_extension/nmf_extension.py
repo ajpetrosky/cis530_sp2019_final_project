@@ -11,20 +11,24 @@ from nltk.corpus import stopwords
 
 # Use NMF to create
 def nmf_topics(n):
-    train_file = "../data/GenieMessagesTrain.csv"
-    dev_file = "../data/GenieMessagesDev.csv"
-    test_file = "../data/GenieMessagesTest.csv"
+    # train_file = "../data/GenieMessagesTrain.csv"
+    # dev_file = "../data/GenieMessagesDev.csv"
+    # test_file = "../data/GenieMessagesTest.csv"
+    train_file = "../data/indMessagesTrain.csv"
+    dev_file = "../data/indMessagesDev.csv"
+    test_file = "../data/indMessagesTest.csv"
 
     # Train the model with train data
     cols = ['Combined.messages.to.Genie_ALL']
     df = pd.read_csv(train_file, usecols=cols)
 
     # Create TF-IDF vectorizer
-    sw = stopwords.words('english') + ['hi', 'thank', 'genie', 'propername', 'thanks', 'like']
-    vect = TfidfVectorizer(max_df=0.9, min_df=3, max_features=160, stop_words=sw)
+    sw = stopwords.words('english') + ['hi', 'thank', 'genie', 'propername', 'thanks', 'like', 'city', 'rmcity',
+                                       'hello', 'i', 'you', 'im', 'know', 'get', 'u']
+    vect = TfidfVectorizer(max_df=0.9, min_df=2, stop_words=sw)#, max_features=100)
 
     # Creating training data with vectorizer and train messages
-    x = df['Combined.messages.to.Genie_ALL'].values
+    x = df['Combined.messages.to.Genie_ALL'].values.astype('U')
     X = vect.fit_transform(x)
     feature_names = vect.get_feature_names()
 
@@ -36,29 +40,29 @@ def nmf_topics(n):
     y = np.argmax(y, axis=1)
     d = {'Combined.messages.to.Genie_ALL': x, 'Topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='nmf_train.csv', index=False)
+    results_df.to_csv(path_or_buf='nmf_train_' + str(n) + '.csv', index=False)
 
     # Run NMF on dev data
     df = pd.read_csv(dev_file, usecols=cols)
-    x = df['Combined.messages.to.Genie_ALL'].values
+    x = df['Combined.messages.to.Genie_ALL'].values.astype('U')
     X = vect.fit_transform(x)
     y = nmf_model.transform(X)
     y = np.argmax(y, axis=1)
     d = {'Combined.messages.to.Genie_ALL': x, 'Topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='nmf_dev.csv', index=False)
+    results_df.to_csv(path_or_buf='nmf_dev_' + str(n) + '.csv', index=False)
 
     # Run NMF on test data
     df = pd.read_csv(test_file, usecols=cols)
-    x = df['Combined.messages.to.Genie_ALL'].values
+    x = df['Combined.messages.to.Genie_ALL'].values.astype('U')
     X = vect.fit_transform(x)
     y = nmf_model.transform(X)
     y = np.argmax(y, axis=1)
     d = {'Combined.messages.to.Genie_ALL': x, 'Topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='nmf_test.csv', index=False)
+    results_df.to_csv(path_or_buf='nmf_test_' + str(n) + '.csv', index=False)
 
-    # display_topics(nmf_model, feature_names, 10)
+    display_topics(nmf_model, feature_names, 10)
 
 
 def display_topics(model, feature_names, no_top_words):

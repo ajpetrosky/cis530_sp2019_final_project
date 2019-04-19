@@ -13,8 +13,8 @@ parser.add_argument('--input', type=str, required=True)
 def sil_score(input):
     cols = ['Combined.messages.to.Genie_ALL', 'Topic']
     df = pd.read_csv(input, usecols=cols)
-    x = df['Combined.messages.to.Genie_ALL'].values
-    labels = df['Topic'].values
+    x = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    labels = df['Topic'].values.astype('int')
 
     cnt_vect = CountVectorizer()
     x = cnt_vect.fit_transform(x)

@@ -1,0 +1,7 @@
+The main goal of this paper was to effectively train a topic model in a very short text corpus (i.e. Twitter). The
+models used in this paper were LDA (which we are using for our published baseline) and author-topic model (an extension
+of the LDA model). More of focus, is that the paper claims aggragating of messages can lead to better performance with
+standard topic models, as opposed to using the individual tweets.
+
+Liangjie Hong and Brian D. Davison, "Empirical Study of Topic Modeling in Twitter"
+https://snap.stanford.edu/soma2010/papers/soma2010_12.pdf
