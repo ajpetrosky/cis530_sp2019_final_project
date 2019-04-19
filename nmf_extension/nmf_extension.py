@@ -25,7 +25,7 @@ def nmf_topics(n):
     # Create TF-IDF vectorizer
     sw = stopwords.words('english') + ['hi', 'thank', 'genie', 'propername', 'thanks', 'like', 'city', 'rmcity',
                                        'hello', 'i', 'you', 'im', 'know', 'get', 'u']
-    vect = TfidfVectorizer(max_df=0.9, min_df=2, stop_words=sw)#, max_features=100)
+    vect = TfidfVectorizer(max_df=0.9, min_df=2, stop_words=sw, max_features=50)
 
     # Creating training data with vectorizer and train messages
     x = df['Combined.messages.to.Genie_ALL'].values.astype('U')

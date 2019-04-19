@@ -1,7 +1,14 @@
 The main goal of this paper was to effectively train a topic model in a very short text corpus (i.e. Twitter). The
 models used in this paper were LDA (which we are using for our published baseline) and author-topic model (an extension
-of the LDA model). More of focus, is that the paper claims aggragating of messages can lead to better performance with
-standard topic models, as opposed to using the individual tweets.
+of the LDA model). More of focus, is that the paper claims aggregating of messages can lead to better performance with
+standard topic models, as opposed to using the individual tweets. They attempted three approaches: training on all
+messages, grouping messages by user profile and training on these messages groups, and finally grouping messages by
+all the messages that contain a certain word. In each of these cases, they also combined the grouping with TF-IDF. For
+message classification, user groupings performed best, with TF-IDF and plain messages coming in close second. Overall,
+the paper concluded that short documents, such as Tweets, can be difficult to train tradition topic models with, and
+aggregating messages in different ways can improve the performance of models trained with such small documents. This
+is import for our case, as individual student messages are shorter than tweets, and all of their messages over the
+course of a semester is not too different in length from tweets.
 
 Liangjie Hong and Brian D. Davison, "Empirical Study of Topic Modeling in Twitter"
 https://snap.stanford.edu/soma2010/papers/soma2010_12.pdf
