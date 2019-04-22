@@ -6,26 +6,27 @@ import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import NMF
-from nltk.corpus import stopwords
 
 
 # Use NMF to create
-def nmf_topics(n):
+def nmf_topics(n, data_folder):
     # train_file = "../data/GenieMessagesTrain.csv"
     # dev_file = "../data/GenieMessagesDev.csv"
     # test_file = "../data/GenieMessagesTest.csv"
-    train_file = "../data/indMessagesTrain.csv"
-    dev_file = "../data/indMessagesDev.csv"
-    test_file = "../data/indMessagesTest.csv"
+    # train_file = "../data/indMessagesTrain.csv"
+    # dev_file = "../data/indMessagesDev.csv"
+    # test_file = "../data/indMessagesTest.csv"
+
+    train_file = "../" + data_folder + "/train.csv"
+    dev_file = "../" + data_folder + "/dev.csv"
+    test_file = "../" + data_folder + "/test.csv"
 
     # Train the model with train data
     cols = ['Combined.messages.to.Genie_ALL']
     df = pd.read_csv(train_file, usecols=cols)
 
     # Create TF-IDF vectorizer
-    sw = stopwords.words('english') + ['hi', 'thank', 'genie', 'propername', 'thanks', 'like', 'city', 'rmcity',
-                                       'hello', 'i', 'you', 'im', 'know', 'get', 'u']
-    vect = TfidfVectorizer(max_df=0.9, min_df=2, stop_words=sw, max_features=50)
+    vect = TfidfVectorizer(max_df=0.9, min_df=2, max_features=150)
 
     # Creating training data with vectorizer and train messages
     x = df['Combined.messages.to.Genie_ALL'].values.astype('U')
@@ -69,3 +70,7 @@ def display_topics(model, feature_names, no_top_words):
     for topic_idx, topic in enumerate(model.components_):
         print("Topic %d:" % topic_idx)
         print(" ".join([feature_names[i] for i in topic.argsort()[:-no_top_words - 1:-1]]))
+
+
+def eval(model):
+    model(n, trainfile, dev....)
