@@ -3,25 +3,25 @@ import argparse
 import numpy as np
 import pandas as pd
 
-pp = pprint.PrettyPrinter()
-parser = argparse.ArgumentParser()
-parser.add_argument('--input', type=str, required=True)
-parser.add_argument('--output', type=str, required=True)
-parser.add_argument('--n_topics', type=int, required=True)
-
 
 # Reads in input csv and outputs a csv with random label for
 # each genie message
-def random_topic(input, output, n):
-    cols = ['Combined.messages.to.Genie_ALL']
-    df = pd.read_csv(input, usecols=cols)
-    df.to_csv(path_or_buf=output, index=False)
-
-
-def main(args):
-    random_topic(args.input, args.output, args.n_topics)
-
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    main(args)
+def refactor():
+    f1 = "data/norm_sg/norm_first_5000_StudentGenie.csv"
+    f2 = "data/norm_sg/norm_second_5000_StudentGenie.csv"
+    f3 = "data/norm_sg/norm_third_5000_StudentGenie.csv"
+    f4 = "data/norm_sg/norm_fourth_5000_StudentGenie.csv"
+    f5 = "data/norm_sg/norm_fifth_5000_StudentGenie.csv"
+    # f6 = "data/norm_sg/norm_sixth_5000_StudentGenie.csv"
+    # f7 = "data/norm_sg/norm_seventh_5000_StudentGenie.csv"
+    cols = ['stud', 'messages']
+    dfs = []
+    dfs.append(pd.read_csv(f1, usecols=cols))
+    dfs.append(pd.read_csv(f2, usecols=cols))
+    dfs.append(pd.read_csv(f3, usecols=cols))
+    dfs.append(pd.read_csv(f4, usecols=cols))
+    dfs.append(pd.read_csv(f5, usecols=cols))
+    # dfs.append(pd.read_csv(f6, usecols=cols))
+    # dfs.append(pd.read_csv(f7, usecols=cols))
+    df = pd.concat(dfs)
+    df.to_csv(path_or_buf="data/NormalizedStudentGenie_Train.csv", index=False)
