@@ -1,0 +1,75 @@
+*NMF on Student-Genie Unnormalized*
+
+n=02: Coherence=0.4140 - best
+n=03: Coherence=0.2930
+n=04: Coherence=0.2750
+n=05: Coherence=0.2644
+n=06: Coherence=0.2492
+n=07: Coherence=0.2375
+n=08: Coherence=0.2315
+n=09: Coherence=0.2127
+n=10: Coherence=0.2350
+n=11: Coherence=0.2256
+n=12: Coherence=0.2422
+n=13: Coherence=0.2766
+n=14: Coherence=0.2649
+n=15: Coherence=0.2452
+
+Silhouette Score for nmf_train_sg_n=2.csv: 0.05352256926700669
+
+Silhouette Score for nmf_dev_sg_n=2.csv: 0.05452263999403661
+
+Test Coherence - n=02: Coherence=0.3647
+Silhouette Score for nmf_test_sg_n=2.csv: 0.05465081024372136
+
+
+*NMF on Student-Genie Normalized*
+
+These are all better than unnormalized!
+
+n=02: Coherence=0.4710 - best
+n=03: Coherence=0.4176 - second best much closer than in unnormalized!
+n=04: Coherence=0.3627
+n=05: Coherence=0.3298
+n=06: Coherence=0.3094
+n=07: Coherence=0.3076
+n=08: Coherence=0.3068
+n=09: Coherence=0.3028
+n=10: Coherence=0.2998
+n=11: Coherence=0.3066
+n=12: Coherence=0.2983
+n=13: Coherence=0.2950
+n=14: Coherence=0.2990
+n=15: Coherence=0.3072
+
+Silhouette Score for nmf_train_sg_norm_n=2.csv: 0.05900841334916503
+
+Silhouette Score for nmf_dev_sg_norm_n=2.csv: 0.017128364204809423
+
+Test Coherence - n=02: Coherence=0.4959
+Silhouette Score for nmf_test_sg_norm_n=2.csv: 0.03767421578479299
+
+
+*NMF on Student-Genie-Teacher Normalized*
+
+n=02: Coherence=0.4677 - best
+n=03: Coherence=0.4101
+n=04: Coherence=0.3552
+n=05: Coherence=0.3178
+n=06: Coherence=0.3152
+n=07: Coherence=0.3040
+n=08: Coherence=0.3021
+n=09: Coherence=0.2972
+n=10: Coherence=0.2912
+n=11: Coherence=0.3108
+n=12: Coherence=0.2923
+n=13: Coherence=0.2783
+n=14: Coherence=0.2913
+n=15: Coherence=0.2996
+
+Silhouette Score for nmf_train_st_norm_n=2.csv: 0.05544303282074754
+
+Silhouette Score for nmf_dev_st_norm_n=2.csv: 0.016320761347826777
+
+Test Coherence - n=02: Coherence=0.4930
+Silhouette Score for nmf_test_st_norm_n=2.csv: 0.03611060971916742

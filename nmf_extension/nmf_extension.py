@@ -16,6 +16,43 @@ from sklearn.metrics import silhouette_score
 # Plotting tools
 import matplotlib.pyplot as plt
 
+# 1. Wordcloud of Top N words in each topic
+from matplotlib import pyplot as plt
+from wordcloud import WordCloud, STOPWORDS
+import matplotlib.colors as mcolors
+
+
+def cloud(topic_words_list, weights_list):
+    cols = [color for name, color in mcolors.TABLEAU_COLORS.items()]  # more colors: 'mcolors.XKCD_COLORS'
+
+    cloud = WordCloud(background_color='white',
+                      width=2500,
+                      height=1800,
+                      max_words=10,
+                      colormap='tab10',
+                      color_func=lambda *args, **kwargs: cols[i],
+                      prefer_horizontal=1.0)
+
+    fig, axes = plt.subplots(1, 2, figsize=(5,5), sharex=True, sharey=True)
+
+    for i in range(len(topic_words_list)):
+        words = topic_words_list[i]
+        weights = weights_list[i]
+        norm_weights = [float(i) / max(weights) for i in weights]
+        fig.add_subplot(1, 2, i+1)
+        topic_words = dict(zip(words, norm_weights))
+        cloud.generate_from_frequencies(topic_words, max_font_size=300)
+        plt.gca().imshow(cloud)
+        plt.gca().set_title('Topic ' + str(i), fontdict=dict(size=16))
+        plt.gca().axis('off')
+
+    plt.subplots_adjust(wspace=0, hspace=0)
+    plt.axis('off')
+    plt.margins(x=0, y=0)
+    plt.tight_layout()
+    plt.show()
+
+
 # Creates inputs for W2V
 class TokenGenerator:
     def __init__( self, documents):
@@ -33,7 +70,7 @@ class TokenGenerator:
 
 # Create W2V model
 def createW2v():
-    file = "../data/NormalizedStudentGenie.csv"
+    file = "../data/NormalizedStudentTeacher.csv"
 
     cols = ['messages']
     df = pd.read_csv(file, usecols=cols)
@@ -46,7 +83,7 @@ def createW2v():
     x = x.tolist()
     docs = TokenGenerator(x)
     w2v = Word2Vec(docs)
-    w2v.save("w2c_model_st_norm.bin")
+    w2v.save("w2c_model_sg.bin")
 
 
 # Calculate coherence
@@ -86,27 +123,40 @@ def topic_terms(all_terms, H, topic_index, top):
     return top_terms
 
 
+def topic_terms_weighted(all_terms, H, topic_index, top):
+    # reverse sort the values to sort the indices
+    top_indices = np.argsort(H[topic_index, :])[::-1]
+    top_weights = np.sort(H[topic_index, :])[::-1]
+    top_weights = top_weights.tolist()[0:top]
+    # now get the terms corresponding to the top-ranked indices
+    top_terms = []
+    for term_index in top_indices[0:top]:
+        top_terms.append(all_terms[term_index])
+    return top_terms, top_weights
+
+
 # Use NMF to create
 def nmf_topics():
     # Get w2v model
-    w2v_model = Word2Vec.load("w2c_model_st_norm.bin")
+    w2v_model = Word2Vec.load("w2c_model_sg.bin")
 
-    train_file = "../data/?.csv"
-    dev_file = "../data/?.csv"
-    test_file = "../data/?.csv"
+    train_file = "../data/GenieMessagesTrain.csv"
+    dev_file = "../data/GenieMessagesDev.csv"
+    test_file = "../data/GenieMessagesTest.csv"
 
     # Train the model with train data
-    cols = ['messages']
+    # cols = ['messages']
+    cols = ['Combined.messages.to.Genie_ALL', 'Combined.messages.from.Genie_ALL']
     df = pd.read_csv(train_file, usecols=cols)
 
     # Create TF-IDF vectorizer
-    vect = TfidfVectorizer(min_df=10, max_features=5000)
+    vect = TfidfVectorizer(min_df=3, max_features=5000)
 
     # Creating training data with vectorizer and train messages
-    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    # x = np.core.defchararray.add(x1, x2)
-    x = df['messages'].values.astype('U')
+    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    x = np.core.defchararray.add(x1, x2)
+    # x = df['messages'].values.astype('U')
     X = vect.fit_transform(x)
     feature_names = vect.get_feature_names()
 
@@ -151,7 +201,7 @@ def nmf_topics():
     best_n = n_values[xpos]
     plt.annotate("n=%d" % best_n, xy=(best_n, ymax), xytext=(best_n, ymax), textcoords="offset points", fontsize=16)
     plt.show()
-    plt.savefig("./nmf_st_norm/co_vs_n_nmf_st_norm.png")
+    # plt.savefig("./nmf_sg/co_vs_n_nmf_sg.png")
 
     # Save results
     (_, _, H, nmf_model) = models[best_n]
@@ -162,31 +212,31 @@ def nmf_topics():
     y = np.argmax(y, axis=1)
     d = {'message': x, 'topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_st_norm/nmf_train_st_norm_n=' + str(best_n) + '.csv', index=False)
+    results_df.to_csv(path_or_buf='./nmf_sg/nmf_train_sg_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_train_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_train_sg_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Run NMF on dev data
     df = pd.read_csv(dev_file, usecols=cols)
-    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    # x = np.core.defchararray.add(x1, x2)
-    x = df['messages'].values.astype('U')
+    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    x = np.core.defchararray.add(x1, x2)
+    # x = df['messages'].values.astype('U')
     X = vect.transform(x)
     y = nmf_model.transform(X)
     y = np.argmax(y, axis=1)
     d = {'message': x, 'topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_st_norm/nmf_dev_st_norm_n=' + str(best_n) + '.csv', index=False)
+    results_df.to_csv(path_or_buf='./nmf_sg/nmf_dev_sg_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_dev_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_dev_sg_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Run NMF on test data
     df = pd.read_csv(test_file, usecols=cols)
-    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    # x = np.core.defchararray.add(x1, x2)
-    x = df['messages'].values.astype('U')
+    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    x = np.core.defchararray.add(x1, x2)
+    # x = df['messages'].values.astype('U')
     X = vect.transform(x)
 
     test_vect = TfidfVectorizer(min_df=10, max_features=5000)
@@ -206,16 +256,21 @@ def nmf_topics():
     y = np.argmax(y, axis=1)
     d = {'message': x, 'topic': y}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_st_norm/nmf_test_st_norm_n=' + str(best_n) + '.csv', index=False)
+    results_df.to_csv(path_or_buf='./nmf_sg/nmf_test_sg_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_test_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_test_sg_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Print top terms per topic and their scores
     term_rankings = []
+    weights = []
     for topic_index in range(best_n):
-        term_rankings.append(topic_terms(feature_names, H, topic_index, 10))
+        terms, weight = topic_terms_weighted(feature_names, H, topic_index, 10)
+        term_rankings.append(terms)
+        weights.append(weight)
 
-    with open("./nmf_st_norm/nmf_coherence_st_norm_n=" + str(best_n) + ".csv", mode="w") as f:
+    cloud(term_rankings, weights)
+
+    with open("./nmf_sg/nmf_coherence_sg_n=" + str(best_n) + ".csv", mode="w") as f:
         cols = ['topic', 'coherence_score', 'word1', 'word2', 'word3', 'word4', 'word5', 'word6', 'word7', 'word8',
                 'word9', 'word10']
         co_writer = csv.DictWriter(f, fieldnames=cols, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
