@@ -135,108 +135,137 @@ def topic_terms_weighted(all_terms, H, topic_index, top):
     return top_terms, top_weights
 
 
+def probs(y):
+    ps = np.sum(y, axis=1)
+    maxes = np.max(y, axis=1)
+    ps = np.divide(maxes, ps)
+    return ps
+
+
 # Use NMF to create
 def nmf_topics():
     # Get w2v model
-    w2v_model = Word2Vec.load("w2c_model_sg.bin")
+    w2v_model = Word2Vec.load("w2c_model_st_norm.bin")
 
-    train_file = "../data/GenieMessagesTrain.csv"
-    dev_file = "../data/GenieMessagesDev.csv"
-    test_file = "../data/GenieMessagesTest.csv"
+    train_file = "../data/NormalizedStudentTeacher_Test.csv"
+    dev_file = "../data/NormalizedStudentTeacher_Dev.csv"
+    test_file = "../data/NormalizedStudentTeacher_Train.csv"
 
     # Train the model with train data
-    # cols = ['messages']
-    cols = ['Combined.messages.to.Genie_ALL', 'Combined.messages.from.Genie_ALL']
+    cols = ['messages']
+    # cols = ['Combined.messages.to.Genie_ALL', 'Combined.messages.from.Genie_ALL']
     df = pd.read_csv(train_file, usecols=cols)
 
     # Create TF-IDF vectorizer
     vect = TfidfVectorizer(min_df=3, max_features=5000)
 
     # Creating training data with vectorizer and train messages
-    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    x = np.core.defchararray.add(x1, x2)
-    # x = df['messages'].values.astype('U')
+    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    # x = np.core.defchararray.add(x1, x2)
+    x = df['messages'].values.astype('U')
     X = vect.fit_transform(x)
     feature_names = vect.get_feature_names()
 
     models = []
 
-    for n in range(2, 16):
-        # Create NMF model, fit it, and save
-        nmf_model = NMF(n_components=n, init='nndsvd')
-        W = nmf_model.fit_transform(X)
-        H = nmf_model.components_
-        models.append((n, W, H, nmf_model))
-
-    n_values = []
-    coherences = []
-
-    all_topic_scores = []
-
-    for (n, _, H, _) in models:
-        # Get all of the topic descriptors - the term_rankings, based on top 10 terms
-        term_rankings = []
-        for topic_index in range(n):
-            term_rankings.append(topic_terms(feature_names, H, topic_index, 10))
-        # Now calculate the coherence based on our Word2vec model
-        n_values.append(n)
-        c, topic_scores = calculate_coherence(w2v_model, term_rankings)
-        coherences.append(c)
-        all_topic_scores.append(topic_scores)
-        print("n=%02d: Coherence=%.4f" % (n, coherences[-1]))
+    # for n in range(2, 16):
+    #     # Create NMF model, fit it, and save
+    #     nmf_model = NMF(n_components=n, init='nndsvd')
+    #     W = nmf_model.fit_transform(X)
+    #     H = nmf_model.components_
+    #     models.append((n, W, H, nmf_model))
+    #
+    # n_values = []
+    # coherences = []
+    #
+    # all_topic_scores = []
+    #
+    # for (n, _, H, _) in models:
+    #     # Get all of the topic descriptors - the term_rankings, based on top 10 terms
+    #     term_rankings = []
+    #     for topic_index in range(n):
+    #         term_rankings.append(topic_terms(feature_names, H, topic_index, 10))
+    #     # Now calculate the coherence based on our Word2vec model
+    #     n_values.append(n)
+    #     c, topic_scores = calculate_coherence(w2v_model, term_rankings)
+    #     coherences.append(c)
+    #     all_topic_scores.append(topic_scores)
+    #     print("n=%02d: Coherence=%.4f" % (n, coherences[-1]))
 
     # Show graph
-    limit = 16
-    start = 2
-    step = 1
-    xs = range(start, limit, step)
-    plt.plot(xs, coherences)
-    plt.xlabel("Num Topics")
-    plt.ylabel("Coherence score")
-    plt.legend("coherence_values", loc='best')
-    plt.title("Number of Topics vs. Coherence Score")
-    ymax = max(coherences)
-    xpos = coherences.index(ymax)
-    best_n = n_values[xpos]
-    plt.annotate("n=%d" % best_n, xy=(best_n, ymax), xytext=(best_n, ymax), textcoords="offset points", fontsize=16)
-    plt.show()
+    # limit = 16
+    # start = 2
+    # step = 1
+    # xs = range(start, limit, step)
+    # plt.plot(xs, coherences)
+    # plt.xlabel("Num Topics")
+    # plt.ylabel("Coherence score")
+    # plt.legend("coherence_values", loc='best')
+    # plt.title("Number of Topics vs. Coherence Score")
+    # ymax = max(coherences)
+    # xpos = coherences.index(ymax)
+    # best_n = n_values[xpos]
+    # plt.annotate("n=%d" % best_n, xy=(best_n, ymax), xytext=(best_n, ymax), textcoords="offset points", fontsize=16)
+    # plt.show()
     # plt.savefig("./nmf_sg/co_vs_n_nmf_sg.png")
 
+    # Focus on n=4
+    nmf_model = NMF(n_components=8, init='nndsvd')
+    W = nmf_model.fit_transform(X)
+    H = nmf_model.components_
+    best_n = 8
+
+    # Get all of the topic descriptors - the term_rankings, based on top 10 terms
+    term_rankings = []
+    for topic_index in range(best_n):
+        term_rankings.append(topic_terms(feature_names, H, topic_index, 10))
+    # Now calculate the coherence based on our Word2vec model
+    c, scores = calculate_coherence(w2v_model, term_rankings)
+    # coherences.append(c)
+    # all_topic_scores.append(topic_scores)
+    print("n=%02d: Coherence=%.4f" % (best_n, c))
+
     # Save results
-    (_, _, H, nmf_model) = models[best_n]
-    scores = all_topic_scores[best_n]
+    # (_, _, H, nmf_model) = models[best_n]
+    # scores = all_topic_scores[best_n]
 
     # Run NMF on train data
     y = nmf_model.transform(X)
+    ps = probs(y)
     y = np.argmax(y, axis=1)
-    d = {'message': x, 'topic': y}
+    d = {'message': x, 'topic': y, 'probability': ps}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_sg/nmf_train_sg_n=' + str(best_n) + '.csv', index=False)
+    results_df = results_df.sort_values('probability', ascending=False)
+    results_df = results_df.sort_values('topic', kind='mergesort')
+    results_df.to_csv(path_or_buf='./nmf_train_st_norm_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_train_sg_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_train_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Run NMF on dev data
     df = pd.read_csv(dev_file, usecols=cols)
-    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    x = np.core.defchararray.add(x1, x2)
-    # x = df['messages'].values.astype('U')
+    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    # x = np.core.defchararray.add(x1, x2)
+    x = df['messages'].values.astype('U')
     X = vect.transform(x)
     y = nmf_model.transform(X)
+    ps = probs(y)
     y = np.argmax(y, axis=1)
-    d = {'message': x, 'topic': y}
+    d = {'message': x, 'topic': y, 'probability': ps}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_sg/nmf_dev_sg_n=' + str(best_n) + '.csv', index=False)
+    results_df = results_df.sort_values('probability', ascending=False)
+    results_df = results_df.sort_values('topic', kind='mergesort')
+    results_df.to_csv(path_or_buf='./nmf_dev_st_norm_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_dev_sg_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_dev_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Run NMF on test data
     df = pd.read_csv(test_file, usecols=cols)
-    x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
-    x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
-    x = np.core.defchararray.add(x1, x2)
-    # x = df['messages'].values.astype('U')
+    # x1 = df['Combined.messages.to.Genie_ALL'].values.astype('U')
+    # x2 = df['Combined.messages.from.Genie_ALL'].values.astype('U')
+    # x = np.core.defchararray.add(x1, x2)
+    x = df['messages'].values.astype('U')
     X = vect.transform(x)
 
     test_vect = TfidfVectorizer(min_df=10, max_features=5000)
@@ -249,16 +278,18 @@ def nmf_topics():
         l = list(set(l) & set(test_feats))
         term_rankings.append(l)
     c, _ = calculate_coherence(w2v_model, term_rankings)
-    coherences.append(c)
-    print("Test Coherence - n=%02d: Coherence=%.4f" % (best_n, coherences[-1]))
+    #coherences.append(c)
+    print("Test Coherence - n=%02d: Coherence=%.4f" % (best_n, c))
 
     y = nmf_model.transform(X)
+    ps = probs(y)
     y = np.argmax(y, axis=1)
-    d = {'message': x, 'topic': y}
+    d = {'message': x, 'topic': y, 'probability': ps}
     results_df = pd.DataFrame(d)
-    results_df.to_csv(path_or_buf='./nmf_sg/nmf_test_sg_n=' + str(best_n) + '.csv', index=False)
+    results_df = results_df.sort_values(['topic', 'probability'], ascending=False, kind='mergesort')
+    results_df.to_csv(path_or_buf='./nmf_test_st_norm_n=' + str(best_n) + '.csv', index=False)
     sil = silhouette_score(X, y)
-    print('\nSilhouette Score for nmf_test_sg_n=' + str(best_n) + '.csv: ' + str(sil))
+    print('\nSilhouette Score for nmf_test_st_norm_n=' + str(best_n) + '.csv: ' + str(sil))
 
     # Print top terms per topic and their scores
     term_rankings = []
@@ -267,10 +298,10 @@ def nmf_topics():
         terms, weight = topic_terms_weighted(feature_names, H, topic_index, 10)
         term_rankings.append(terms)
         weights.append(weight)
+    #
+    # cloud(term_rankings, weights)
 
-    cloud(term_rankings, weights)
-
-    with open("./nmf_sg/nmf_coherence_sg_n=" + str(best_n) + ".csv", mode="w") as f:
+    with open("./nmf_coherence_st_norm_n=" + str(best_n) + ".csv", mode="w") as f:
         cols = ['topic', 'coherence_score', 'word1', 'word2', 'word3', 'word4', 'word5', 'word6', 'word7', 'word8',
                 'word9', 'word10']
         co_writer = csv.DictWriter(f, fieldnames=cols, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
